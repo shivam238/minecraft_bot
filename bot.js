@@ -299,7 +299,10 @@ function getCurrentPriority() {
   }
 
   // 5. Following
-  if (botState === 'following' && followTarget && bot.players[followTarget]) {
+  // Note: We do NOT require bot.players[followTarget] here because the player entity
+  // may not be loaded yet (e.g. just joined or out of render range briefly).
+  // executePriorityLogic handles the missing-entity case gracefully.
+  if (botState === 'following' && followTarget) {
     return Priorities.FOLLOWING;
   }
 
@@ -424,9 +427,22 @@ function executePriorityLogic(priority) {
       }
       break;
 
-    case Priorities.FOLLOWING:
+    case Priorities.FOLLOWING: {
       const targetPlayer = bot.players[followTarget];
-      if (targetPlayer && targetPlayer.entity) {
+      if (!targetPlayer) {
+        // Player not in server's player list at all — stop following
+        const offlineTarget = followTarget;
+        console.log(`[Follow] ${offlineTarget} is not online. Stopping follow.`);
+        stopCurrentTasks();
+        botState = 'idle';
+        followTarget = null;
+        bot.chat(`❌ ${offlineTarget} is not online.`);
+      } else if (!targetPlayer.entity) {
+        // Player exists but entity not loaded yet (chunk not loaded / too far)
+        // Just wait — do NOT stop the pathfinder, let it continue its last goal
+        // or stay still until the entity loads in next tick
+        console.log(`[Follow] Waiting for ${followTarget}'s entity to load...`);
+      } else {
         const dist = bot.entity.position.distanceTo(targetPlayer.entity.position);
         const maxDist = config.followMaxDistance || 30;
         if (dist > maxDist) {
@@ -436,12 +452,9 @@ function executePriorityLogic(priority) {
         } else {
           safeSetGoal(new goals.GoalFollow(targetPlayer.entity, 2), true);
         }
-      } else {
-        if (bot.pathfinder.isMoving()) {
-          bot.pathfinder.stop();
-        }
       }
       break;
+    }
 
     case Priorities.GUARDING:
       if (guardPosition) {
