@@ -1282,7 +1282,9 @@ async function runWalkAction() {
     const dz = Math.sin(angle) * dist;
     
     const possibleTarget = bot.entity.position.offset(dx, 0, dz);
-    if (isPathSafe(bot.entity.position, possibleTarget, true)) {
+    // checkBridges=false: OneBlock servers start with void on all sides,
+    // the priority manager's void-safety check handles fall prevention.
+    if (isPathSafe(bot.entity.position, possibleTarget, false)) {
       targetPos = possibleTarget;
       break;
     }
