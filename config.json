@@ -1,0 +1,14 @@
+{
+  "host": "SHIBU2.aternos.me",
+  "port": 25565,
+  "username": "LazyBoy",
+  "owners": [
+    "darkeeidea"
+  ],
+  "randomChatEnabled": false,
+  "followMaxDistance": 30,
+  "afkRadius": 2,
+  "creeperAvoidDistance": 8,
+  "autoSleep": true,
+  "autoDefense": true
+}
