@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^17.4.2",
     "mineflayer": "^4.37.1",
     "mineflayer-auto-eat": "^5.0.3",
     "mineflayer-pathfinder": "^2.4.5",
