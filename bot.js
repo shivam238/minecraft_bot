@@ -1276,7 +1276,7 @@ async function runWalkAction() {
   
   let targetPos = null;
   for (let attempt = 0; attempt < 15; attempt++) {
-    const dist = 1 + Math.random(); // 1 to 2 blocks
+    const dist = 3 + Math.random() * 3; // 3 to 6 blocks (was 1-2)
     const angle = Math.random() * Math.PI * 2;
     const dx = Math.cos(angle) * dist;
     const dz = Math.sin(angle) * dist;
@@ -1289,15 +1289,16 @@ async function runWalkAction() {
   }
   
   if (targetPos && isAFKActive()) {
+    console.log(`🚶 AFK: Walking to nearby position.`);
     const sneakChance = Math.random() < 0.15;
     if (sneakChance) {
       bot.setControlState('sneak', true);
     }
     
-    safeSetGoal(new goals.GoalNear(targetPos.x, targetPos.y, targetPos.z, 0.2));
+    safeSetGoal(new goals.GoalNear(targetPos.x, targetPos.y, targetPos.z, 0.5));
     
     const startTime = Date.now();
-    while (isAFKActive() && bot.pathfinder.isMoving() && (Date.now() - startTime < 4000)) {
+    while (isAFKActive() && bot.pathfinder.isMoving() && (Date.now() - startTime < 6000)) {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
     
@@ -1316,6 +1317,8 @@ async function runWalkAction() {
         bot.swingArm('right');
       }
     }
+  } else {
+    console.log(`🚶 AFK: No safe walk target found, skipping walk.`);
   }
 }
 
