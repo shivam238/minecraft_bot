@@ -1337,29 +1337,33 @@ async function performMicroAction() {
   }
 }
 
-async function runAFKCycle() {
+async function runAFKCycle(forceWalk = false) {
   if (!isAFKActive()) return;
 
   let actionType;
-  const rand = Math.random();
-  if (rand < 0.65) {
-    actionType = 'idle';
-  } else if (rand < 0.85) {
-    actionType = 'look';
-  } else if (rand < 0.95) {
-    actionType = 'look_swing';
-  } else {
+  if (forceWalk) {
     actionType = 'walk';
+  } else {
+    const rand = Math.random();
+    if (rand < 0.45) {
+      actionType = 'idle';
+    } else if (rand < 0.65) {
+      actionType = 'look';
+    } else if (rand < 0.80) {
+      actionType = 'look_swing';
+    } else {
+      actionType = 'walk'; // 20% base chance (was 5%)
+    }
   }
 
   // Prevent repeating the same action type consecutively
-  if (actionType === lastAFKActionType) {
+  if (!forceWalk && actionType === lastAFKActionType) {
     const secondRand = Math.random();
-    if (secondRand < 0.65) {
+    if (secondRand < 0.45) {
       actionType = 'idle';
-    } else if (secondRand < 0.85) {
+    } else if (secondRand < 0.65) {
       actionType = 'look';
-    } else if (secondRand < 0.95) {
+    } else if (secondRand < 0.80) {
       actionType = 'look_swing';
     } else {
       actionType = 'walk';
@@ -1391,7 +1395,7 @@ async function runAFKCycle() {
   }
 }
 
-function scheduleNextAFK() {
+function scheduleNextAFK(isFirstCycle = false) {
   if (smartAFKInterval) {
     clearTimeout(smartAFKInterval);
     smartAFKInterval = null;
@@ -1399,18 +1403,24 @@ function scheduleNextAFK() {
   
   if (!bot || !bot.entity) return;
 
-  let delay = 20000 + Math.random() * 40000;
-  // 8% chance to trigger a longer idle delay (2 to 4 minutes)
-  if (Math.random() < 0.08) {
-    delay = 120000 + Math.random() * 120000;
-    console.log(`💤 AFK: Taking a longer pause of ${Math.round(delay / 1000)}s.`);
+  let delay;
+  if (isFirstCycle) {
+    // First cycle after spawn: start moving quickly (3–8 seconds)
+    delay = 3000 + Math.random() * 5000;
+  } else {
+    delay = 20000 + Math.random() * 40000;
+    // 8% chance to trigger a longer idle delay (2 to 4 minutes)
+    if (Math.random() < 0.08) {
+      delay = 120000 + Math.random() * 120000;
+      console.log(`💤 AFK: Taking a longer pause of ${Math.round(delay / 1000)}s.`);
+    }
   }
 
   smartAFKInterval = setTimeout(async () => {
     if (isAFKActive()) {
-      await runAFKCycle();
+      await runAFKCycle(isFirstCycle); // forceWalk=true on first cycle after spawn
     }
-    scheduleNextAFK();
+    scheduleNextAFK(); // subsequent cycles use normal delays
   }, delay);
 }
 
@@ -1427,7 +1437,7 @@ function startSmartLoops() {
   clearAllIntervals();
 
   // Loop 1: Smart AFK movements (Random wanders)
-  scheduleNextAFK();
+  scheduleNextAFK(true); // isFirstCycle=true: start moving within 3-8s after spawn
 
   // Loop 2: Smart Bed sleep check at night (during AFK)
   sleepCheckInterval = setInterval(() => {
