@@ -12,7 +12,7 @@
   "autoSleep": true,
   "autoDefense": true,
   "ai": {
-    "enabled": false,
+    "enabled": true,
     "apiKey": "",
     "primaryModel": "google/gemini-2.5-flash",
     "fallbackModel": "meta-llama/llama-3-8b-instruct:free",
