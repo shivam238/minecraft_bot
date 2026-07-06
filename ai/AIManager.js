@@ -1,7 +1,11 @@
 const Memory = require('./Memory');
 const ProviderManager = require('./ProviderManager');
 
+// Helper function to safely parse JSON from AI response, handling markdown blocks and whitespace
 function parseJSONResponse(text) {
+  if (!text) {
+    throw new Error('Empty response text');
+  }
   try {
     return JSON.parse(text.trim());
   } catch (e) {
@@ -33,12 +37,144 @@ class AIManager {
     this.config = config;
     this.memory = new Memory(10);
     this.provider = new ProviderManager(config);
+    this.cache = new Map(); // Cache key -> { value, timestamp }
+    this.userRequestTimes = new Map(); // Username -> Array of timestamps
+    this.cacheCleanupInterval = null;
+    this.startCacheCleanup();
   }
 
   // Update configuration dynamically (e.g. if config.json changes)
   updateConfig(newConfig) {
     this.config = newConfig;
-    this.provider.config = newConfig;
+    this.provider.updateConfig(newConfig);
+    this.startCacheCleanup();
+  }
+
+  startCacheCleanup() {
+    this.stopCacheCleanup();
+    if (!this.cache) return;
+
+    const intervalMs = (this.config.ai && this.config.ai.cacheCleanupIntervalMs) || 30000;
+    if (intervalMs > 0) {
+      this.cacheCleanupInterval = setInterval(() => {
+        this.cleanupCache();
+      }, intervalMs);
+    }
+  }
+
+  stopCacheCleanup() {
+    if (this.cacheCleanupInterval) {
+      clearInterval(this.cacheCleanupInterval);
+      this.cacheCleanupInterval = null;
+    }
+  }
+
+  cleanupCache() {
+    if (!this.cache) {
+      this.stopCacheCleanup();
+      return;
+    }
+    const now = Date.now();
+    const ttl = (this.config.ai && this.config.ai.cacheTTL) || 10000;
+    let expiredCount = 0;
+    for (const [key, entry] of this.cache.entries()) {
+      if (now - entry.timestamp > ttl) {
+        this.cache.delete(key);
+        expiredCount++;
+      }
+    }
+    if (expiredCount > 0) {
+      console.log(`🧹 [AIManager] Cleaned up ${expiredCount} expired cache entries.`);
+    }
+  }
+
+  // Check if AI is configured (API key is present)
+  isAIConfigured() {
+    return !!this.provider.getApiKey();
+  }
+
+  // Check if AI is enabled in configuration
+  isAIEnabled() {
+    return !!(this.config.ai && this.config.ai.enabled);
+  }
+
+  // Rate limiting check per user
+  checkRateLimit(username) {
+    const now = Date.now();
+    if (!this.userRequestTimes.has(username)) {
+      this.userRequestTimes.set(username, []);
+    }
+    const timestamps = this.userRequestTimes.get(username);
+    
+    const windowMs = (this.config.ai && this.config.ai.rateLimitWindowMs) || 60000;
+    const maxRequests = (this.config.ai && this.config.ai.rateLimitMaxRequests) || 5;
+    
+    // Filter timestamps to keep only those within current window
+    const filtered = timestamps.filter(t => now - t < windowMs);
+    this.userRequestTimes.set(username, filtered);
+    
+    if (filtered.length >= maxRequests) {
+      return false; // Rate limit exceeded
+    }
+    
+    filtered.push(now);
+    return true;
+  }
+
+  // Get cached response if still valid (TTL check)
+  getFromCache(key) {
+    if (!this.cache.has(key)) return null;
+    const entry = this.cache.get(key);
+    const ttl = (this.config.ai && this.config.ai.cacheTTL) || 10000;
+    
+    if (Date.now() - entry.timestamp > ttl) {
+      this.cache.delete(key);
+      return null;
+    }
+    return entry.value;
+  }
+
+  // Store response in cache with size bounds check
+  setInCache(key, value) {
+    const maxSize = (this.config.ai && this.config.ai.cacheMaxSize) || 50;
+    if (this.cache.size >= maxSize) {
+      const firstKey = this.cache.keys().next().value;
+      if (firstKey) this.cache.delete(firstKey);
+    }
+    this.cache.set(key, {
+      value,
+      timestamp: Date.now()
+    });
+  }
+
+  // Validate the intent and structure of the parsed response
+  validateResponse(parsed) {
+    if (!parsed || typeof parsed !== 'object') {
+      throw new Error('Parsed response is not an object');
+    }
+    if (typeof parsed.response !== 'string') {
+      throw new Error('Response is missing or not a string');
+    }
+    const allowedIntents = [
+      'follow', 'guard', 'afk', 'stop', 'goto', 'sleep', 
+      'wake', 'drop', 'tpa', 'accept', 'status', 'say', 'none'
+    ];
+    if (!allowedIntents.includes(parsed.intent)) {
+      throw new Error(`Invalid intent returned: ${parsed.intent}`);
+    }
+    if (parsed.parameters && typeof parsed.parameters !== 'object') {
+      throw new Error('Parameters is not an object');
+    }
+    if (parsed.intent === 'goto') {
+      const coords = parsed.parameters && parsed.parameters.coordinates;
+      if (!coords || typeof coords.x !== 'number' || typeof coords.y !== 'number' || typeof coords.z !== 'number') {
+        throw new Error('goto intent requires coordinates {x, y, z}');
+      }
+    }
+    if ((parsed.intent === 'follow' || parsed.intent === 'tpa') && (!parsed.parameters || !parsed.parameters.target)) {
+      throw new Error(`${parsed.intent} intent requires parameters.target`);
+    }
+    return parsed;
   }
 
   // Local Rule Engine Fallback parser for NLP when AI is offline or disabled
@@ -51,7 +187,6 @@ class AIManager {
 
     if (msg.includes('follow') || msg.includes('come')) {
       intent = 'follow';
-      // Try to extract name, or fallback to sender
       const words = msg.split(/\s+/);
       const idx = words.findIndex(w => w === 'follow' || w === 'come');
       let target = username;
@@ -71,7 +206,6 @@ class AIManager {
       response = `🛑 [Rule Engine] Understood. Stopping all tasks.`;
     } else if (msg.includes('goto') || msg.includes('go to') || msg.includes('move to')) {
       intent = 'goto';
-      // Attempt to extract 3 numbers
       const coords = message.match(/-?\d+(\.\d+)?/g);
       if (coords && coords.length >= 3) {
         const x = parseFloat(coords[0]);
@@ -111,15 +245,31 @@ class AIManager {
       intent = 'status';
       response = ''; // Executed in bot.js status code
     } else {
-      // Default conversational response fallback
       response = `🤖 [Rule Engine] Hello ${username}. My OpenRouter API is offline or key is unconfigured. I am operating under fallback Rules. Use prefix ! for direct command control.`;
     }
 
     return { response, intent, parameters };
   }
 
-  // Get current system prompt based on bot's live state
-  getSystemPrompt(bot, botState, followTarget, guardPosition) {
+  // Helper to execute Rule Engine fallback and update memory
+  executeFallback(username, message, reason) {
+    const fallbackResult = this.parseRuleEngineFallback(username, message);
+    
+    // Prefix fallback response if triggered by failure or rate limiting
+    if (reason && reason !== 'AI disabled or unconfigured') {
+      fallbackResult.response = `[API Error Fallback: ${reason}] ` + fallbackResult.response;
+    }
+
+    this.memory.addMessage('assistant', fallbackResult.response);
+    if (fallbackResult.intent && fallbackResult.intent !== 'none') {
+      this.memory.addIntent(fallbackResult.intent);
+    }
+
+    return fallbackResult;
+  }
+
+  // Build current system prompt based on bot's live state
+  buildSystemPrompt(bot, botState, followTarget, guardPosition) {
     const items = bot.inventory.items();
     const invSummary = items.map(i => `${i.count}x ${i.name}`).join(', ') || 'empty';
     
@@ -165,67 +315,150 @@ Current Live Bot State:
 Remember: Keep the response short, friendly, and matching a Minecraft helper bot personality. Always return the correct JSON structure.`;
   }
 
-  // Orchestrate prompt construction, api call, and parsing
+  // Build the messages history payload including system prompt
+  buildMessages(bot, botState, followTarget, guardPosition, username, message) {
+    const systemPrompt = this.buildSystemPrompt(bot, botState, followTarget, guardPosition);
+    return [
+      { role: 'system', content: systemPrompt },
+      ...this.memory.getHistory()
+    ];
+  }
+
+  // Core orchestration entry point
   async processMessage(bot, botState, followTarget, guardPosition, username, message) {
     this.memory.addMessage('user', message, username);
 
-    const isAIConfigured = !!(process.env.OPENROUTER_API_KEY || (this.config.ai && this.config.ai.apiKey));
-    const isAIEnabled = !!(this.config.ai && this.config.ai.enabled);
+    // Rate Limiting Check
+    if (!this.checkRateLimit(username)) {
+      console.warn(`⚠️ [AIManager] Rate limit exceeded for user: ${username}. Falling back to Rule Engine...`);
+      return this.executeFallback(username, message, 'Rate limit exceeded');
+    }
 
-    // If AI is disabled or not configured, immediately use Rule Engine Fallback
-    if (!isAIEnabled || !isAIConfigured) {
+    // In-memory Cache Lookup
+    const cacheKey = `${botState}:${followTarget || 'none'}:${message.trim().toLowerCase()}`;
+    const cached = this.getFromCache(cacheKey);
+    if (cached) {
+      console.log(`💾 [AIManager] Cache hit for message: "${message}"`);
+      this.memory.addMessage('assistant', cached.response);
+      if (cached.intent && cached.intent !== 'none') {
+        this.memory.addIntent(cached.intent);
+      }
+      return cached;
+    }
+
+    // Fallback if AI disabled or key missing
+    if (!this.isAIEnabled() || !this.isAIConfigured()) {
       console.log(`🔌 [AIManager] AI is disabled/unconfigured. Falling back to Rule Engine NLP parser...`);
-      const fallbackResult = this.parseRuleEngineFallback(username, message);
-      this.memory.addMessage('assistant', fallbackResult.response);
-      if (fallbackResult.intent && fallbackResult.intent !== 'none') {
-        this.memory.addIntent(fallbackResult.intent);
-      }
-      return fallbackResult;
+      return this.executeFallback(username, message, 'AI disabled or unconfigured');
     }
 
-    // Build the message history for chat completion
-    const systemMessage = {
-      role: 'system',
-      content: this.getSystemPrompt(bot, botState, followTarget, guardPosition)
-    };
+    const messages = this.buildMessages(bot, botState, followTarget, guardPosition, username, message);
+    let responseObj;
 
-    const messages = [
-      systemMessage,
-      ...this.memory.getHistory()
-    ];
+    let primarySuccess = false;
 
+    // Structured retry and model failover with schema validation
     try {
-      const result = await this.provider.getAIResponse(messages);
+      const apiKey = this.provider.getApiKey();
+      const { primary } = this.provider.getModels();
+      
+      let data;
+      try {
+        // Query Primary Model (Attempt 1)
+        data = await this.provider.callOpenRouter(apiKey, primary, messages);
+      } catch (err) {
+        if (this.isTransientError(err)) {
+          console.warn(`⚠️ [AIManager] Primary model transient error: ${err.message}. Retrying once...`);
+          // Query Primary Model (Attempt 2 - Retry)
+          data = await this.provider.callOpenRouter(apiKey, primary, messages);
+        } else {
+          throw err;
+        }
+      }
+      
+      const result = this.provider.parseProviderResponse(data, primary);
       const parsed = parseJSONResponse(result.content);
+      responseObj = this.validateResponse(parsed);
+      primarySuccess = true;
       
-      console.log(`🤖 [AIManager] AI response received: model=${result.model}, intent=${parsed.intent}`);
-      
-      this.memory.addMessage('assistant', parsed.response || "");
-      if (parsed.intent && parsed.intent !== 'none') {
-        this.memory.addIntent(parsed.intent);
-      }
-
-      return {
-        response: parsed.response || "",
-        intent: parsed.intent || "none",
-        parameters: parsed.parameters || {}
-      };
+      console.log(`🤖 [AIManager] Primary model response parsed & validated: model=${result.model}, intent=${responseObj.intent}`);
     } catch (err) {
-      console.error(`⚠️ [AIManager] AI Provider failover failed: ${err.message}. Falling back to Rule Engine NLP parser...`);
-      
-      // Ultimate fallback: Rule Engine NLP parser
-      const fallbackResult = this.parseRuleEngineFallback(username, message);
-      
-      // Prefix response to notify user that it's a fallback due to API failure
-      fallbackResult.response = `[API Error Fallback] ` + fallbackResult.response;
-      
-      this.memory.addMessage('assistant', fallbackResult.response);
-      if (fallbackResult.intent && fallbackResult.intent !== 'none') {
-        this.memory.addIntent(fallbackResult.intent);
-      }
-      
-      return fallbackResult;
+      console.warn(`⚠️ [AIManager] Primary model failed: ${err.message}. Transitioning to fallback model...`);
     }
+
+    if (!primarySuccess) {
+      try {
+        const apiKey = this.provider.getApiKey();
+        const { fallback } = this.provider.getModels();
+        
+        let data;
+        try {
+          // Query Fallback Model (Attempt 1)
+          data = await this.provider.callOpenRouter(apiKey, fallback, messages);
+        } catch (err) {
+          if (this.isTransientError(err)) {
+            console.warn(`⚠️ [AIManager] Fallback model transient error: ${err.message}. Retrying once...`);
+            // Query Fallback Model (Attempt 2 - Retry)
+            data = await this.provider.callOpenRouter(apiKey, fallback, messages);
+          } else {
+            throw err;
+          }
+        }
+        
+        const result = this.provider.parseProviderResponse(data, fallback);
+        const parsed = parseJSONResponse(result.content);
+        responseObj = this.validateResponse(parsed);
+        
+        console.log(`🤖 [AIManager] Fallback model response parsed & validated: model=${result.model}, intent=${responseObj.intent}`);
+      } catch (fallbackErr) {
+        console.error(`❌ [AIManager] Fallback model failed: ${fallbackErr.message}`);
+        
+        // Final failover to Rule Engine
+        return this.executeFallback(username, message, `AI failure: ${fallbackErr.message}`);
+      }
+    }
+
+    // Success path: update memory, cache response, and return
+    this.memory.addMessage('assistant', responseObj.response || "");
+    if (responseObj.intent && responseObj.intent !== 'none') {
+      this.memory.addIntent(responseObj.intent);
+    }
+
+    this.setInCache(cacheKey, responseObj);
+    return responseObj;
+  }
+
+  isTransientError(err) {
+    if (!err) return false;
+    const message = typeof err === 'string' ? err : (err.message || '');
+    
+    // Timeout check
+    if (message.includes('timeout') || message.includes('Timeout') || message.includes('ETIMEDOUT') || message.includes('ESOCKETTIMEDOUT')) {
+      return true;
+    }
+    
+    // Network errors check
+    const networkCodes = ['ECONNRESET', 'EADDRINUSE', 'ECONNREFUSED', 'EPIPE', 'ENOTFOUND', 'ENETUNREACH', 'EAI_AGAIN', 'FETCH_ERROR'];
+    if (networkCodes.some(code => message.includes(code))) {
+      return true;
+    }
+    if (err.code && networkCodes.includes(err.code)) {
+      return true;
+    }
+    if (message.includes('network error') || message.includes('Network error') || message.includes('fetch failed')) {
+      return true;
+    }
+    
+    // HTTP status codes check (429, 5xx)
+    const httpStatusMatch = message.match(/HTTP\s+(\d+)/i);
+    if (httpStatusMatch) {
+      const status = parseInt(httpStatusMatch[1], 10);
+      if (status === 429 || (status >= 500 && status < 600)) {
+        return true;
+      }
+    }
+    
+    return false;
   }
 }
 

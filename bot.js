@@ -25,7 +25,15 @@ let config = {
     enabled: false,
     apiKey: "",
     primaryModel: "google/gemini-2.5-flash",
-    fallbackModel: "meta-llama/llama-3-8b-instruct:free"
+    fallbackModel: "meta-llama/llama-3-8b-instruct:free",
+    timeoutMs: 8000,
+    cacheTTL: 10000,
+    cacheMaxSize: 50,
+    rateLimitMaxRequests: 5,
+    rateLimitWindowMs: 60000,
+    temperature: 0.7,
+    maxTokens: 300,
+    cacheCleanupIntervalMs: 30000
   }
 };
 
@@ -49,7 +57,15 @@ function loadConfig() {
       enabled: false,
       apiKey: "",
       primaryModel: "google/gemini-2.5-flash",
-      fallbackModel: "meta-llama/llama-3-8b-instruct:free"
+      fallbackModel: "meta-llama/llama-3-8b-instruct:free",
+      timeoutMs: 8000,
+      cacheTTL: 10000,
+      cacheMaxSize: 50,
+      rateLimitMaxRequests: 5,
+      rateLimitWindowMs: 60000,
+      temperature: 0.7,
+      maxTokens: 300,
+      cacheCleanupIntervalMs: 30000
     }
   };
 
@@ -83,6 +99,14 @@ function loadConfig() {
         config.ai.apiKey = typeof config.ai.apiKey === 'string' ? config.ai.apiKey : "";
         config.ai.primaryModel = typeof config.ai.primaryModel === 'string' && config.ai.primaryModel.trim() !== "" ? config.ai.primaryModel : "google/gemini-2.5-flash";
         config.ai.fallbackModel = typeof config.ai.fallbackModel === 'string' && config.ai.fallbackModel.trim() !== "" ? config.ai.fallbackModel : "meta-llama/llama-3-8b-instruct:free";
+        config.ai.timeoutMs = Number(config.ai.timeoutMs) || 8000;
+        config.ai.cacheTTL = Number(config.ai.cacheTTL) || 10000;
+        config.ai.cacheMaxSize = Number(config.ai.cacheMaxSize) || 50;
+        config.ai.rateLimitMaxRequests = Number(config.ai.rateLimitMaxRequests) || 5;
+        config.ai.rateLimitWindowMs = Number(config.ai.rateLimitWindowMs) || 60000;
+        config.ai.temperature = typeof config.ai.temperature === 'number' ? config.ai.temperature : 0.7;
+        config.ai.maxTokens = Number(config.ai.maxTokens) || 300;
+        config.ai.cacheCleanupIntervalMs = Number(config.ai.cacheCleanupIntervalMs) || 30000;
 
         if (aiManager) {
           aiManager.updateConfig(config);

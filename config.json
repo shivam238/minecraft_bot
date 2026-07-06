@@ -10,5 +10,19 @@
   "afkRadius": 2,
   "creeperAvoidDistance": 8,
   "autoSleep": true,
-  "autoDefense": true
+  "autoDefense": true,
+  "ai": {
+    "enabled": false,
+    "apiKey": "",
+    "primaryModel": "google/gemini-2.5-flash",
+    "fallbackModel": "meta-llama/llama-3-8b-instruct:free",
+    "timeoutMs": 8000,
+    "cacheTTL": 10000,
+    "cacheMaxSize": 50,
+    "rateLimitMaxRequests": 5,
+    "rateLimitWindowMs": 60000,
+    "temperature": 0.7,
+    "maxTokens": 300,
+    "cacheCleanupIntervalMs": 30000
+  }
 }
