@@ -155,12 +155,12 @@ class ProviderManager {
   }
 
   // Try every configured provider in order until one succeeds.
-  // Optional `process(content)` callback is called with raw content string;
+  // Optional `processCallback(content)` callback is called with raw content string;
   // if it throws (e.g. JSON parse or schema validation failure) that provider
   // is treated as failed and the next one is tried.
-  // Returns { model, content, value } where value is what process() returned
+  // Returns { model, content, value } where value is what processCallback() returned
   // (or undefined if no process callback was supplied).
-  async callWithFallbackChain(messages, process = null) {
+  async callWithFallbackChain(messages, processCallback = null) {
     const { primary, fallback } = this.getModels();
     const errors = [];
 
@@ -180,7 +180,7 @@ class ProviderManager {
             console.log(`🤖 [AI] Trying OpenRouter → ${modelName}`);
             const data = await this.callOpenRouter(key, modelName, messages);
             const result = this.parseProviderResponse(data, modelName);
-            const value = process ? process(result.content) : undefined;
+            const value = processCallback ? processCallback(result.content) : undefined;
             console.log(`✅ [AI] OpenRouter responded (${modelName})`);
             return { model: modelName, content: result.content, value };
           } catch (err) {
@@ -197,7 +197,7 @@ class ProviderManager {
             provider.url, key, provider.model, messages, provider.extraHeaders || {}
           );
           const result = this.parseProviderResponse(data, provider.model);
-          const value = process ? process(result.content) : undefined;
+          const value = processCallback ? processCallback(result.content) : undefined;
           console.log(`✅ [AI] ${provider.name} responded (${provider.model})`);
           return { model: provider.model, content: result.content, value };
         } catch (err) {
