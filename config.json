@@ -8,7 +8,7 @@
   "randomChatEnabled": false,
   "followMaxDistance": 30,
   "creeperAvoidDistance": 8,
-  "autoSleep": false,
+  "autoSleep": true,
   "autoDefense": true,
   "keepAliveIntervalMs": 75000,
   "maxIdleBeforeKeepAliveMs": 120000,
