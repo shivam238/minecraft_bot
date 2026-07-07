@@ -1,0 +1,172 @@
+◇ injected env (8) from .env [2m// tip: ⌘ enable debugging { debug: true }[0m
+📂 Configuration loaded successfully.
+
+Lifecycle commands (console):
+  start   — connect and run the bot
+  stop    — fully stop (clears timers, disconnects, no reconnect)
+  status  — show lifecycle and connection state
+  help    — show this help
+
+In-game owner command: !shutdown — full stop while connected
+
+ℹ️ Minecraft bot ready. Auto-starting...
+✅ Bot lifecycle started.
+ℹ️ Connecting to SHIBU2.aternos.me:25565 as LazyBoy...
+[1G[0J> [3G[1G[0J> [3G[1G[0J> [3GMineflayer detected that you are using a deprecated event (physicTick)! Please use this event (physicsTick) instead.
+✅ LazyBoy logged in
+✅ LazyBoy spawned — features active
+✅ Keep-alive loop started (every 75s)
+✅ Smart loops started (AFK, priority manager, optional chat)
+[1G[0J> [3G[1G[0J> [3G[1G[0J> [3G[1G[0J> [3G[1G[0J> [3Gℹ️ Priority IDLE -> AFK
+ℹ️ Home position set: 7, 61, 4
+[1G[0J> [3G[1G[0J> [3Gℹ️ Priority AFK -> VOID_ESCAPE
+⚠️ VOID ESCAPE — all movement stopped
+⚠️ Void escape: pathfinding to last safe pos -1, 61, 5
+[1G[0J> [3G[1G[0J> [3G⚠️ Void escape: pathfinding to last safe pos -1, 61, 5
+⚠️ Void escape: pathfinding to last safe pos -1, 61, 5
+[1G[0J> [3G[1G[0J> [3Gℹ️ Priority VOID_ESCAPE -> AFK
+ℹ️ AutoEat resumed
+[1G[0J> [3G[1G[0J> [3Gℹ️ Priority AFK -> VOID_ESCAPE
+⚠️ VOID ESCAPE — all movement stopped
+[1G[0J> [3G[1G[0J> [3Gℹ️ Priority VOID_ESCAPE -> AFK
+ℹ️ AutoEat resumed
+[1G[0J> [3G[1G[0J> [3Gℹ️ Priority AFK -> VOID_ESCAPE
+⚠️ VOID ESCAPE — all movement stopped
+[1G[0J> [3G[1G[0J> [3G⚠️ Void escape: pathfinding to last safe pos -1, 61, 5
+⚠️ LazyBoy died — respawning
+[1G[0J> [3Gℹ️ Priority VOID_ESCAPE -> AFK
+ℹ️ AutoEat resumed
+[1G[0J> [3G[1G[0J> [3G[1G[0J> [3G✅ LazyBoy spawned — features active
+✅ Keep-alive loop started (every 75s)
+✅ Smart loops started (AFK, priority manager, optional chat)
+[1G[0J> [3G[1G[0J> [3G[1G[0J> [3G⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+[1G[0J> [3G[1G[0J> [3G⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+[1G[0J> [3G[1G[0J> [3G⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+[1G[0J> [3G[1G[0J> [3G⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+[1G[0J> [3G[1G[0J> [3G⚠️ Void/liquid safety — stopping pathfinder
+ℹ️ Keep-alive sent (1s since last activity)
+[1G[0J> [3G[1G[0J> [3G⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+[1G[0J> [3G[1G[0J> [3Gℹ️ Keep-alive sent (1s since last activity)
+⚠️ Void/liquid safety — stopping pathfinder
+[1G[0J> [3G[1G[0J> [3G⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+[1G[0J> [3G[1G[0J> [3Gℹ️ Panic triggered by owner darkeeidea
+ℹ️ Priority AFK -> PANICKING
+[1G[0J> [3G[1G[0J> [3Gℹ️ Priority PANICKING -> EMERGENCY_SURVIVAL
+⚠️ Emergency retreat to closest safe pos: 2, 61, 5
+⚠️ Emergency retreat to closest safe pos: 4, 61, 6
+⚠️ Emergency retreat to closest safe pos: 4, 61, 6
+⚠️ Emergency retreat to closest safe pos: 4, 61, 6
+⚠️ Emergency retreat to closest safe pos: 4, 61, 6
+⚠️ Emergency retreat to closest safe pos: 4, 61, 6
+⚠️ Emergency retreat to closest safe pos: 4, 61, 6
+⚠️ Emergency retreat to closest safe pos: 4, 61, 6
+⚠️ Emergency retreat to closest safe pos: 5, 61, -2
+⚠️ Emergency retreat to closest safe pos: 5, 62, -6
+⚠️ Emergency retreat to closest safe pos: 5, 61, -6
+⚠️ Emergency retreat to closest safe pos: 5, 61, -6
+⚠️ Emergency retreat to closest safe pos: 5, 61, -6
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Emergency retreat to closest safe pos: 5, 61, -6
+⚠️ LazyBoy died — respawning
+ℹ️ Priority EMERGENCY_SURVIVAL -> AFK
+ℹ️ AutoEat resumed
+✅ LazyBoy spawned — features active
+✅ Keep-alive loop started (every 75s)
+✅ Smart loops started (AFK, priority manager, optional chat)
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ safeSetGoal blocked unsafe goal at (-6, 62, -1) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (2, 62, -7) (ground=air, feet=air)
+ℹ️ Panic triggered by owner darkeeidea
+ℹ️ Priority AFK -> PANICKING
+ℹ️ Panic triggered by owner darkeeidea
+⚠️ safeSetGoal blocked unsafe goal at (10, 62, -1) (ground=air, feet=air)
+ℹ️ Panic triggered by owner darkeeidea
+ℹ️ Priority PANICKING -> AFK
+ℹ️ AutoEat resumed
+ℹ️ Panic triggered by owner darkeeidea
+ℹ️ Priority AFK -> PANICKING
+ℹ️ Priority PANICKING -> AFK
+ℹ️ AutoEat resumed
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+ℹ️ Keep-alive sent (1s since last activity)
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+ℹ️ Keep-alive sent (2s since last activity)
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ safeSetGoal blocked unsafe goal at (-4, 62, -2) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (8, 63, -5) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (-5, 63, 5) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (-5, 63, -3) (ground=air, feet=air)
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+ℹ️ Keep-alive sent (3s since last activity)
+ℹ️ Priority AFK -> EMERGENCY_SURVIVAL
+ℹ️ AutoEat suspended for high-priority action
+⚠️ Emergency retreat to closest safe pos: 7, 61, 2
+⚠️ Emergency retreat to closest safe pos: 9, 61, 0
+⚠️ Emergency retreat to closest safe pos: 9, 61, 0
+⚠️ Emergency retreat to closest safe pos: 9, 61, 0
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Emergency retreat to closest safe pos: 9, 61, 0
+⚠️ Emergency retreat to closest safe pos: 12, 61, 0
+⚠️ Emergency retreat to closest safe pos: 10, 61, 0
+⚠️ Emergency retreat to closest safe pos: 10, 61, -2
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Emergency retreat to closest safe pos: 11, 61, -3
+⚠️ Emergency retreat to closest safe pos: 11, 61, -3
+⚠️ Emergency retreat to closest safe pos: 11, 61, -3
+⚠️ Emergency retreat to closest safe pos: 10, 61, 0
+⚠️ Emergency retreat to closest safe pos: 10, 61, 0
+ℹ️ Auto-sleep: nighttime, heading to bed...
+ℹ️ Walking to bed...
+⚠️ Emergency retreat to closest safe pos: 10, 61, 0
+⚠️ Auto-sleep failed: too_far
+⚠️ Emergency retreat to closest safe pos: 11, 61, 0
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Emergency retreat to closest safe pos: 11, 61, -1
+⚠️ Emergency retreat to closest safe pos: 11, 61, -1
+⚠️ Emergency retreat to closest safe pos: 8, 61, -1
+⚠️ Emergency retreat to closest safe pos: 11, 61, -1
+⚠️ Emergency retreat to closest safe pos: 11, 61, -2
+⚠️ Emergency retreat to closest safe pos: 13, 61, -1
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Emergency retreat to closest safe pos: 10, 61, 0
+⚠️ Emergency retreat to closest safe pos: 10, 61, 0
+⚠️ Emergency retreat to closest safe pos: 10, 61, 0
+⚠️ Emergency retreat to closest safe pos: 10, 61, 0
+[1G[0J> [3G[1G[0J> [3G⚠️ Emergency retreat to closest safe pos: 10, 61, 0
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Emergency retreat to closest safe pos: 10, 61, 0
+⚠️ Emergency retreat to closest safe pos: 10, 61, 0
+⚠️ Emergency retreat to closest safe pos: 13, 61, -1
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Emergency retreat to closest safe pos: 10, 61, 0
+⚠️ Emergency retreat to closest safe pos: 10, 61, 0
+⚠️ Emergency retreat to closest safe pos: 10, 61, 0
+ℹ️ Keep-alive sent (2s since last activity)
+⚠️ Emergency retreat to closest safe pos: 10, 61, 0
+⚠️ Emergency retreat to closest safe pos: 11, 61, -1
+⚠️ Emergency retreat to closest safe pos: 11, 61, -1
+⚠️ Emergency retreat to closest safe pos: 13, 61, -2
+⚠️ Emergency retreat to closest safe pos: 13, 61, -1
+⚠️ Emergency retreat to closest safe pos: 13, 61, -1
+⚠️ Emergency retreat to closest safe pos: 13, 61, -1
+⚠️ Emergency retreat to closest safe pos: 13, 61, -1
+⚠️ Emergency retreat to closest safe pos: 13, 61, -1
+⚠️ Emergency retreat to closest safe pos: 13, 61, -1
+⚠️ Emergency retreat to closest safe pos: 13, 61, -1
+[1G[0J> [3G[1G[0J> [3G⚠️ Emergency retreat to closest safe pos: 13, 61, -1
+⚠️ Emergency retreat to closest safe pos: 13, 61, -1
+⚠️ Emergency retreat to closest safe pos: 13, 61, -1
+⚠️ Emergency retreat to closest safe pos: 13, 61, -1
+[1G[0J> [3G⚠️ Emergency retreat to closest safe pos: 11, 61, -1
+[1G[0J> [3G⚠️ Emergency retreat to closest safe pos: 11, 61, -1

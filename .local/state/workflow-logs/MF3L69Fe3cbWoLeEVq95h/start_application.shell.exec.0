@@ -1,0 +1,149 @@
+◇ injected env (8) from .env [2m// tip: ⌘ custom filepath { path: '/custom/path/.env' }[0m
+📂 Configuration loaded successfully.
+
+Lifecycle commands (console):
+  start   — connect and run the bot
+  stop    — fully stop (clears timers, disconnects, no reconnect)
+  status  — show lifecycle and connection state
+  help    — show this help
+
+In-game owner command: !shutdown — full stop while connected
+
+ℹ️ Minecraft bot ready. Auto-starting...
+✅ Bot lifecycle started.
+ℹ️ Connecting to SHIBU2.aternos.me:25565 as LazyBoy...
+[1G[0J> [3G[1G[0J> [3G[1G[0J> [3GError: read ECONNRESET
+[90m    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)[39m {
+  errno: [33m-104[39m,
+  code: [32m'ECONNRESET'[39m,
+  syscall: [32m'read'[39m
+}
+❌ Connection error: read ECONNRESET
+⚠️ Disconnect via error | reason=none | error=read ECONNRESET
+ℹ️ Reconnect attempt #1 will be scheduled.
+ℹ️ Reconnect #1 in 15s (at ~7:13:02 AM)
+[1G[0J> [3G[1G[0J> [3G[1G[0J> [3G[1G[0J> [3Gℹ️ Pinging SHIBU2.aternos.me:25565...
+✅ Server reachable. Connecting (attempt #1)...
+ℹ️ Connecting to SHIBU2.aternos.me:25565 as LazyBoy...
+[1G[0J> [3G[1G[0J> [3GMineflayer detected that you are using a deprecated event (physicTick)! Please use this event (physicsTick) instead.
+✅ LazyBoy logged in
+✅ LazyBoy spawned — features active
+✅ Keep-alive loop started (every 75s)
+✅ Smart loops started (AFK, priority manager, optional chat)
+[1G[0J> [3G[1G[0J> [3G[1G[0J> [3G[1G[0J> [3Gℹ️ Priority IDLE -> AFK
+ℹ️ Home position set: 2, 61, 2
+[1G[0J> [3G[1G[0J> [3Gℹ️ Pickup: spotted 949 at 0,61,-4
+⚠️ Void/liquid safety — stopping pathfinder
+[1G[0J> [3G[1G[0J> [3G⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+[1G[0J> [3G[1G[0J> [3G⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+[1G[0J> [3G[1G[0J> [3G⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+[1G[0J> [3G[1G[0J> [3G⚠️ Void/liquid safety — stopping pathfinder
+⚠️ safeSetGoal blocked unsafe goal at (-4, 62, 2) (ground=air, feet=air)
+ℹ️ Owner command: darkeeidea -> !come 
+✅ Follow started: darkeeidea
+[1G[0J> [3G[1G[0J> [3G[1G[0J> [3Gℹ️ Priority AFK -> FOLLOWING
+⚠️ Void/liquid safety — stopping pathfinder
+[1G[0J> [3G[1G[0J> [3G⚠️ Void/liquid safety — stopping pathfinder
+⚠️ safeSetGoal blocked unsafe goal at (4, 62, -2) (ground=air, feet=air)
+[1G[0J> [3G[1G[0J> [3Gℹ️ Keep-alive sent (38s since last activity)
+⚠️ safeSetGoal blocked unsafe goal at (4, 62, -7) (ground=air, feet=air)
+[1G[0J> [3G[1G[0J> [3G⚠️ safeSetGoal blocked unsafe goal at (4, 62, -3) (ground=air, feet=air)
+ℹ️ Owner command: darkeeidea -> !reset 
+✅ AFK reset by owner
+ℹ️ Priority FOLLOWING -> AFK
+[1G[0J> [3G[1G[0J> [3G[1G[0J> [3Gℹ️ Keep-alive sent (1s since last activity)
+⚠️ Void/liquid safety — stopping pathfinder
+[1G[0J> [3G[1G[0J> [3Gℹ️ Auto-sleep: nighttime, heading to bed...
+ℹ️ Walking to bed...
+ℹ️ Priority AFK -> SLEEPING
+[1G[0J> [3Gℹ️ Keep-alive sent (69s since last activity)
+ℹ️ Wolf mode: joining owner's fight against chicken
+ℹ️ Priority SLEEPING -> COMBAT
+ℹ️ AutoEat suspended for high-priority action
+ℹ️ Auto-sleep: nighttime, heading to bed...
+ℹ️ Walking to bed...
+ℹ️ Priority COMBAT -> SLEEPING
+ℹ️ AutoEat resumed
+ℹ️ Wolf mode: joining owner's fight against chicken
+ℹ️ Priority SLEEPING -> COMBAT
+ℹ️ AutoEat suspended for high-priority action
+ℹ️ Priority COMBAT -> AFK
+ℹ️ AutoEat resumed
+ℹ️ Pickup: spotted 1112 at 2,61,-4
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ safeSetGoal blocked unsafe goal at (3, 62, 3) (ground=air, feet=air)
+ℹ️ Keep-alive sent (0s since last activity)
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+ℹ️ Pickup: spotted 949 at 4,61,-4
+ℹ️ Pickup: spotted 1031 at -1,61,-8
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ safeSetGoal blocked unsafe goal at (0, 62, 2) (ground=air, feet=air)
+ℹ️ Pickup: spotted 28 at 1,61,-6
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+[1G[0J> [3G[1G[0J> [3G⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+ℹ️ Pickup: spotted 1031 at -1,61,-6
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+ℹ️ Keep-alive sent (1s since last activity)
+ℹ️ Auto-sleep: nighttime, heading to bed...
+ℹ️ Walking to bed...
+ℹ️ Priority AFK -> SLEEPING
+ℹ️ Owner defense: attacking .pspthepro2 for hurting darkeeidea
+ℹ️ Priority SLEEPING -> COMBAT
+ℹ️ AutoEat suspended for high-priority action
+ℹ️ Owner command: darkeeidea -> !come 
+✅ Follow started: darkeeidea
+ℹ️ Priority COMBAT -> FOLLOWING
+ℹ️ AutoEat resumed
+⚠️ safeSetGoal blocked unsafe goal at (4, 62, -6) (ground=air, feet=air)
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+ℹ️ Keep-alive sent (72s since last activity)
+⚠️ safeSetGoal blocked unsafe goal at (3, 62, 5) (ground=air, feet=air)
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+ℹ️ Owner command: darkeeidea -> !reset 
+✅ AFK reset by owner
+ℹ️ Auto-sleep: nighttime, heading to bed...
+ℹ️ Walking to bed...
+ℹ️ Priority FOLLOWING -> SLEEPING
+ℹ️ Wolf mode: joining owner's fight against stray
+ℹ️ Priority SLEEPING -> COMBAT
+ℹ️ AutoEat suspended for high-priority action
+ℹ️ Priority COMBAT -> AFK
+ℹ️ AutoEat resumed
+ℹ️ Keep-alive sent (4s since last activity)
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+ℹ️ SIGTERM received — stopping bot
+✅ Bot stopped (SIGTERM).

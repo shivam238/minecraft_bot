@@ -1,0 +1,40 @@
+◇ injected env (8) from .env [2m// tip: ⌘ override existing { override: true }[0m
+📂 Configuration loaded successfully.
+
+Lifecycle commands (console):
+  start   — connect and run the bot
+  stop    — fully stop (clears timers, disconnects, no reconnect)
+  status  — show lifecycle and connection state
+  help    — show this help
+
+In-game owner command: !shutdown — full stop while connected
+
+ℹ️ Minecraft bot ready. Auto-starting...
+✅ Bot lifecycle started.
+ℹ️ Connecting to SHIBU2.aternos.me:25565 as LazyBoy...
+Error: read ECONNRESET
+[90m    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)[39m {
+  errno: [33m-104[39m,
+  code: [32m'ECONNRESET'[39m,
+  syscall: [32m'read'[39m
+}
+❌ Connection error: read ECONNRESET
+⚠️ Disconnect via error | reason=none | error=read ECONNRESET
+ℹ️ Reconnect attempt #1 will be scheduled.
+/home/runner/workspace/lib/lifecycle.js:78
+  bot.pathfinder.stop();
+                 ^
+
+TypeError: Cannot read properties of undefined (reading 'stop')
+    at stopCurrentTasks [90m(/home/runner/workspace/[39mlib/lifecycle.js:78:18[90m)[39m
+    at cleanupBot [90m(/home/runner/workspace/[39mlib/lifecycle.js:89:3[90m)[39m
+    at scheduleReconnect [90m(/home/runner/workspace/[39mlib/lifecycle.js:182:3[90m)[39m
+    at handleDisconnect [90m(/home/runner/workspace/[39mlib/lifecycle.js:163:5[90m)[39m
+    at EventEmitter.<anonymous> [90m(/home/runner/workspace/[39mlib/botFactory.js:157:5[90m)[39m
+[90m    at EventEmitter.emit (node:events:531:35)[39m
+    at Client.<anonymous> [90m(/home/runner/workspace/[39mnode_modules/[4mmineflayer[24m/lib/loader.js:110:9[90m)[39m
+[90m    at Client.emit (node:events:519:28)[39m
+    at [90m/home/runner/workspace/[39mnode_modules/[4mminecraft-protocol[24m/src/client/autoVersion.js:13:30
+    at [90m/home/runner/workspace/[39mnode_modules/[4mminecraft-protocol[24m/src/ping.js:15:7
+
+Node.js v22.22.0

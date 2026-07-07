@@ -1,0 +1,22 @@
+node:internal/modules/cjs/loader:1386
+  throw err;
+  ^
+
+Error: Cannot find module 'dotenv'
+Require stack:
+- /home/runner/workspace/bot.js
+[90m    at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)[39m
+[90m    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)[39m
+[90m    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)[39m
+[90m    at Function._load (node:internal/modules/cjs/loader:1192:37)[39m
+[90m    at TracingChannel.traceSync (node:diagnostics_channel:328:14)[39m
+[90m    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)[39m
+[90m    at Module.require (node:internal/modules/cjs/loader:1463:12)[39m
+[90m    at require (node:internal/modules/helpers:147:16)[39m
+    at Object.<anonymous> [90m(/home/runner/workspace/[39mbot.js:1:1[90m)[39m
+[90m    at Module._compile (node:internal/modules/cjs/loader:1706:14)[39m {
+  code: [32m'MODULE_NOT_FOUND'[39m,
+  requireStack: [ [32m'/home/runner/workspace/bot.js'[39m ]
+}
+
+Node.js v22.22.0

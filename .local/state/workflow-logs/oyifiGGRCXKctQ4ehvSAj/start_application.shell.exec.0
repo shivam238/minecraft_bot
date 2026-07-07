@@ -1,0 +1,122 @@
+◇ injected env (8) from .env [2m// tip: ◈ secrets for agents [www.dotenvx.com][0m
+📂 Configuration loaded successfully.
+
+Lifecycle commands (console):
+  start   — connect and run the bot
+  stop    — fully stop (clears timers, disconnects, no reconnect)
+  status  — show lifecycle and connection state
+  help    — show this help
+
+In-game owner command: !shutdown — full stop while connected
+
+ℹ️ Minecraft bot ready. Auto-starting...
+✅ Bot lifecycle started.
+ℹ️ Connecting to SHIBU2.aternos.me:25565 as LazyBoy...
+Mineflayer detected that you are using a deprecated event (physicTick)! Please use this event (physicsTick) instead.
+✅ LazyBoy logged in
+✅ LazyBoy spawned — features active
+✅ Keep-alive loop started (every 75s)
+✅ Smart loops started (AFK, priority manager, optional chat)
+ℹ️ Priority IDLE -> AFK
+ℹ️ Home position set: 1, 61, 2
+⚠️ safeSetGoal blocked unsafe goal at (-6, 62, -2) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (-3, 62, -4) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (11, 62, 1) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (7, 62, -1) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (-4, 62, -3) (ground=air, feet=air)
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+ℹ️ Keep-alive sent (1s since last activity)
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ safeSetGoal blocked unsafe goal at (8, 62, -8) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (2, 62, 4) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (5, 62, 4) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (6, 62, 2) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (-6, 62, -5) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (12, 62, 5) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (6, 62, 4) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (2, 62, -9) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (-7, 62, -4) (ground=air, feet=air)
+ℹ️ Keep-alive sent (2s since last activity)
+⚠️ safeSetGoal blocked unsafe goal at (6, 62, 3) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (14, 62, -1) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (-1, 62, 4) (ground=air, feet=air)
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+ℹ️ Keep-alive sent (0s since last activity)
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+ℹ️ Priority AFK -> VOID_ESCAPE
+⚠️ VOID ESCAPE — all movement stopped
+⚠️ Void escape: pathfinding to last safe pos 13, 61, -2
+⚠️ Void escape: pathfinding to last safe pos 13, 61, -2
+⚠️ Void escape: pathfinding to last safe pos 13, 61, -2
+ℹ️ Priority VOID_ESCAPE -> AFK
+ℹ️ AutoEat resumed
+ℹ️ Priority AFK -> VOID_ESCAPE
+⚠️ VOID ESCAPE — all movement stopped
+⚠️ Void escape: pathfinding to last safe pos 13, 61, -2
+ℹ️ Priority VOID_ESCAPE -> EMERGENCY_SURVIVAL
+ℹ️ Priority EMERGENCY_SURVIVAL -> VOID_ESCAPE
+⚠️ VOID ESCAPE — all movement stopped
+⚠️ LazyBoy died — respawning
+ℹ️ Priority VOID_ESCAPE -> AFK
+ℹ️ AutoEat resumed
+✅ LazyBoy spawned — features active
+✅ Keep-alive loop started (every 75s)
+✅ Smart loops started (AFK, priority manager, optional chat)
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ safeSetGoal blocked unsafe goal at (4, 62, -7) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (10, 62, -3) (ground=air, feet=air)
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ safeSetGoal blocked unsafe goal at (-3, 63, 3) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (-3, 63, 4) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (-3, 63, -10) (ground=air, feet=air)
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+ℹ️ Keep-alive sent (2s since last activity)
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ safeSetGoal blocked unsafe goal at (4, 62, 5) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (-3, 62, -2) (ground=air, feet=air)
+⚠️ safeSetGoal blocked unsafe goal at (-4, 62, 2) (ground=air, feet=air)
+ℹ️ Panic triggered by owner darkeeidea
+ℹ️ Priority AFK -> PANICKING
+ℹ️ Priority PANICKING -> AFK
+ℹ️ AutoEat resumed
+ℹ️ Keep-alive sent (1s since last activity)
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+ℹ️ Keep-alive sent (2s since last activity)
+⚠️ Void/liquid safety — stopping pathfinder
+ℹ️ darkeeidea went to sleep — leaving for 30s
+ℹ️ Player sleeping — leaving for 30s
+⚠️ Connection ended
+ℹ️ Disconnect via end ignored (bot stopped or intentional).
+ℹ️ Temporary leave over — rejoining...
+ℹ️ Connecting to SHIBU2.aternos.me:25565 as LazyBoy...
+Mineflayer detected that you are using a deprecated event (physicTick)! Please use this event (physicsTick) instead.
+✅ LazyBoy logged in
+✅ LazyBoy spawned — features active
+✅ Keep-alive loop started (every 75s)
+✅ Smart loops started (AFK, priority manager, optional chat)
+ℹ️ SIGTERM received — stopping bot
+✅ Bot stopped (SIGTERM).

@@ -1,0 +1,37 @@
+◇ injected env (8) from .env [2m// tip: ◈ secrets for agents [www.dotenvx.com][0m
+📂 Configuration loaded successfully.
+
+Lifecycle commands (console):
+  start   — connect and run the bot
+  stop    — fully stop (clears timers, disconnects, no reconnect)
+  status  — show lifecycle and connection state
+  help    — show this help
+
+In-game owner command: !shutdown — full stop while connected
+
+ℹ️ Minecraft bot ready. Auto-starting...
+✅ Bot lifecycle started.
+ℹ️ Connecting to SHIBU2.aternos.me:25565 as LazyBoy...
+[1G[0J> [3G[1G[0J> [3GMineflayer detected that you are using a deprecated event (physicTick)! Please use this event (physicsTick) instead.
+✅ LazyBoy logged in
+✅ LazyBoy spawned — features active
+✅ Keep-alive loop started (every 75s)
+✅ Smart loops started (AFK, priority manager, optional chat)
+[1G[0J> [3G[1G[0J> [3G[1G[0J> [3G[1G[0J> [3Gℹ️ Priority IDLE -> AFK
+ℹ️ Home position set: 0, 61, -1
+[1G[0J> [3G[1G[0J> [3G⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+[1G[0J> [3G[1G[0J> [3G⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+[1G[0J> [3G[1G[0J> [3G⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+[1G[0J> [3G[1G[0J> [3G⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+[1G[0J> [3G[1G[0J> [3G⚠️ safeSetGoal blocked unsafe goal at (-6, 62, -3) (ground=air, feet=air)
+⚠️ Void/liquid safety — stopping pathfinder
+[1G[0J> [3G[1G[0J> [3G⚠️ Void/liquid safety — stopping pathfinder
+⚠️ Void/liquid safety — stopping pathfinder
+[1G[0J> [3G[1G[0J> [3G⚠️ Void/liquid safety — stopping pathfinder
+ℹ️ Keep-alive sent (1s since last activity)
+[1G[0J> [3G[1G[0J> [3Gℹ️ SIGTERM received — stopping bot
+✅ Bot stopped (SIGTERM).
