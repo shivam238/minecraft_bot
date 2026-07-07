@@ -86,6 +86,15 @@ class AIManager {
     if (expiredCount > 0) {
       console.log(`🧹 [AIManager] Cleaned up ${expiredCount} expired cache entries.`);
     }
+
+    // Evict userRequestTimes entries for users who haven't chatted in 2× the rate window.
+    // Without this the map grows indefinitely as more unique usernames appear.
+    const windowMs = (this.config.ai && this.config.ai.rateLimitWindowMs) || 60000;
+    for (const [user, timestamps] of this.userRequestTimes.entries()) {
+      if (!timestamps.length || now - timestamps[timestamps.length - 1] > windowMs * 2) {
+        this.userRequestTimes.delete(user);
+      }
+    }
   }
 
   // Check if AI is configured (any provider key is present)
@@ -424,38 +433,6 @@ Current state:
     return responseObj;
   }
 
-  isTransientError(err) {
-    if (!err) return false;
-    const message = typeof err === 'string' ? err : (err.message || '');
-    
-    // Timeout check
-    if (message.includes('timeout') || message.includes('Timeout') || message.includes('ETIMEDOUT') || message.includes('ESOCKETTIMEDOUT')) {
-      return true;
-    }
-    
-    // Network errors check
-    const networkCodes = ['ECONNRESET', 'EADDRINUSE', 'ECONNREFUSED', 'EPIPE', 'ENOTFOUND', 'ENETUNREACH', 'EAI_AGAIN', 'FETCH_ERROR'];
-    if (networkCodes.some(code => message.includes(code))) {
-      return true;
-    }
-    if (err.code && networkCodes.includes(err.code)) {
-      return true;
-    }
-    if (message.includes('network error') || message.includes('Network error') || message.includes('fetch failed')) {
-      return true;
-    }
-    
-    // HTTP status codes check (429, 5xx)
-    const httpStatusMatch = message.match(/HTTP\s+(\d+)/i);
-    if (httpStatusMatch) {
-      const status = parseInt(httpStatusMatch[1], 10);
-      if (status === 429 || (status >= 500 && status < 600)) {
-        return true;
-      }
-    }
-    
-    return false;
-  }
 }
 
 module.exports = AIManager;

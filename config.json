@@ -20,7 +20,7 @@
     "timeoutMs": 8000,
     "cacheTTL": 10000,
     "cacheMaxSize": 50,
-    "rateLimitMaxRequests": 5,
+    "rateLimitMaxRequests": 10,
     "rateLimitWindowMs": 60000,
     "temperature": 0.7,
     "maxTokens": 300,
