@@ -5,7 +5,7 @@
   "owners": [
     "darkeeidea"
   ],
-  "randomChatEnabled": false,
+  "randomChatEnabled": true,
   "followMaxDistance": 30,
   "creeperAvoidDistance": 8,
   "autoSleep": true,
