@@ -1,5 +1,5 @@
 {
-  "host": "SHIBU2.aternos.me",
+  "host": "localhost",
   "port": 25565,
   "username": "LazyBoy",
   "owners": [
