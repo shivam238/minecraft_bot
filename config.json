@@ -7,10 +7,11 @@
   ],
   "randomChatEnabled": false,
   "followMaxDistance": 30,
-  "afkRadius": 2,
   "creeperAvoidDistance": 8,
-  "autoSleep": true,
+  "autoSleep": false,
   "autoDefense": true,
+  "keepAliveIntervalMs": 75000,
+  "maxIdleBeforeKeepAliveMs": 120000,
   "ai": {
     "enabled": true,
     "apiKey": "",

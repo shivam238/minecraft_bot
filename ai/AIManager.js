@@ -88,9 +88,9 @@ class AIManager {
     }
   }
 
-  // Check if AI is configured (API key is present)
+  // Check if AI is configured (any provider key is present)
   isAIConfigured() {
-    return !!this.provider.getApiKey();
+    return this.provider.hasAnyKey();
   }
 
   // Check if AI is enabled in configuration
@@ -272,47 +272,85 @@ class AIManager {
   buildSystemPrompt(bot, botState, followTarget, guardPosition) {
     const items = bot.inventory.items();
     const invSummary = items.map(i => `${i.count}x ${i.name}`).join(', ') || 'empty';
-    
-    return `You are an intelligent decision-making AI layer inside a Minecraft Mineflayer bot named "${bot.username}".
-Your job is to assist the owner and decide what intent/action to execute.
 
-You MUST respond strictly in the following JSON format:
+    // Nearby players (excluding the bot itself)
+    const nearbyPlayers = Object.values(bot.players || {})
+      .filter(p => p.username !== bot.username && p.entity)
+      .map(p => {
+        const dist = Math.round(bot.entity.position.distanceTo(p.entity.position));
+        return `${p.username} (${dist}m away)`;
+      });
+    const nearbyPlayersStr = nearbyPlayers.length > 0 ? nearbyPlayers.join(', ') : 'none';
+
+    // Nearby hostile mobs
+    const hostileNames = ['zombie','skeleton','spider','creeper','witch','phantom','drowned','husk','stray','zombie_villager'];
+    const nearbyHostiles = [];
+    try {
+      const mob = bot.nearestEntity(e =>
+        e.type === 'mob' &&
+        hostileNames.includes(e.name) &&
+        bot.entity.position.distanceTo(e.position) < 20
+      );
+      if (mob) nearbyHostiles.push(`${mob.name} (${Math.round(bot.entity.position.distanceTo(mob.position))}m)`);
+    } catch (_) {}
+    const nearbyHostilesStr = nearbyHostiles.length > 0 ? nearbyHostiles.join(', ') : 'none';
+
+    // Weather
+    let weather = 'clear';
+    try {
+      if (bot.isRaining) weather = bot.thunderState > 0 ? 'thunderstorm' : 'raining';
+    } catch (_) {}
+
+    // Time
+    let timeStr = 'unknown';
+    try {
+      if (bot.time) {
+        const t = bot.time.timeOfDay;
+        if (t < 1000 || t > 23000) timeStr = 'sunrise';
+        else if (t < 6000) timeStr = 'morning';
+        else if (t < 12000) timeStr = 'afternoon';
+        else if (t < 13000) timeStr = 'sunset';
+        else timeStr = 'night';
+      }
+    } catch (_) {}
+
+    return `You are a Minecraft bot named "${bot.username}" — a chill, helpful player who talks like a real person.
+Respond naturally and casually. You can speak in English or mix in Hinglish if the player does.
+Keep replies SHORT (under 80 chars). Never sound like a robot or assistant.
+
+You MUST always reply in this exact JSON format:
 {
-  "response": "A short, conversational response to say in the game (keep it under 80 characters, fit in one chat line).",
+  "response": "what you say in chat (short, natural, under 80 chars)",
   "intent": "follow | guard | afk | stop | goto | sleep | wake | drop | tpa | accept | status | say | none",
   "parameters": {
-    "target": "username (optional, for follow/tpa)",
-    "coordinates": { "x": number, "y": number, "z": number } (optional, for goto)
+    "target": "username (for follow/tpa)",
+    "coordinates": { "x": number, "y": number, "z": number }
   }
 }
 
-Capability & Intent mappings:
-- "follow": Follow a player. Set parameters.target to the username.
-- "guard": Guard the current location of the bot.
-- "afk": Turn on smart AFK mode (wandering, look/swing).
-- "stop": Stop all tasks and stand still (state set to 'idle').
-- "goto": Walk to coordinate coordinates. Set parameters.coordinates to {x, y, z}.
-- "sleep": Find a bed and sleep.
-- "wake": Wake up from sleep.
-- "drop": Drop all inventory items.
-- "tpa": Teleport request to a player. Set parameters.target.
-- "accept": Accept a pending teleport request.
-- "status": Show health, food, position, state.
-- "say": Conversational chat or answer. Do NOT change state, just talk.
-- "none": Do nothing.
+Intents:
+- follow: follow a player (set parameters.target)
+- guard: guard current spot
+- afk: start wandering/AFK mode
+- stop: stand still, stop everything
+- goto: walk to coords (set parameters.coordinates)
+- sleep: go find a bed and sleep
+- wake: wake up
+- drop: drop all items
+- tpa: send teleport request (set parameters.target)
+- accept: accept a tp request
+- status: show HP, food, position
+- say: just chat, don't change state
+- none: do nothing, just respond
 
-Current Live Bot State:
-- Bot Username: ${bot.username}
-- Health: ${bot.health}/20 | Food: ${bot.food}/20
-- Position: x=${Math.round(bot.entity.position.x)}, y=${Math.round(bot.entity.position.y)}, z=${Math.round(bot.entity.position.z)}
-- State: ${botState}
-- Follow Target: ${followTarget || "none"}
-- Guard Position: ${guardPosition ? `x=${Math.round(guardPosition.x)}, y=${Math.round(guardPosition.y)}, z=${Math.round(guardPosition.z)}` : "none"}
-- Is Sleeping: ${bot.isSleeping}
-- Time of Day: ${bot.time ? (bot.time.isNight ? "Night" : "Day") : "Unknown"}
-- Inventory: ${invSummary}
-
-Remember: Keep the response short, friendly, and matching a Minecraft helper bot personality. Always return the correct JSON structure.`;
+Current state:
+- Name: ${bot.username} | Health: ${bot.health}/20 | Food: ${bot.food}/20
+- Position: ${Math.round(bot.entity.position.x)}, ${Math.round(bot.entity.position.y)}, ${Math.round(bot.entity.position.z)}
+- Mode: ${botState}${followTarget ? ` (following ${followTarget})` : ''}${guardPosition ? ` (guarding ${Math.round(guardPosition.x)},${Math.round(guardPosition.y)},${Math.round(guardPosition.z)})` : ''}
+- Sleeping: ${bot.isSleeping} | Time: ${timeStr} | Weather: ${weather}
+- Nearby players: ${nearbyPlayersStr}
+- Nearby hostiles: ${nearbyHostilesStr}
+- Inventory: ${invSummary}`;
   }
 
   // Build the messages history payload including system prompt
@@ -355,67 +393,19 @@ Remember: Keep the response short, friendly, and matching a Minecraft helper bot
     const messages = this.buildMessages(bot, botState, followTarget, guardPosition, username, message);
     let responseObj;
 
-    let primarySuccess = false;
-
-    // Structured retry and model failover with schema validation
+    // Try all configured providers in order (OpenRouter → Gemini → OpenAI → Grok).
+    // Parse + schema validation runs inside the chain so a bad response from one
+    // provider causes the next provider to be tried rather than falling to rule engine.
     try {
-      const apiKey = this.provider.getApiKey();
-      const { primary } = this.provider.getModels();
-      
-      let data;
-      try {
-        // Query Primary Model (Attempt 1)
-        data = await this.provider.callOpenRouter(apiKey, primary, messages);
-      } catch (err) {
-        if (this.isTransientError(err)) {
-          console.warn(`⚠️ [AIManager] Primary model transient error: ${err.message}. Retrying once...`);
-          // Query Primary Model (Attempt 2 - Retry)
-          data = await this.provider.callOpenRouter(apiKey, primary, messages);
-        } else {
-          throw err;
-        }
-      }
-      
-      const result = this.provider.parseProviderResponse(data, primary);
-      const parsed = parseJSONResponse(result.content);
-      responseObj = this.validateResponse(parsed);
-      primarySuccess = true;
-      
-      console.log(`🤖 [AIManager] Primary model response parsed & validated: model=${result.model}, intent=${responseObj.intent}`);
+      const { model, value } = await this.provider.callWithFallbackChain(messages, (content) => {
+        const parsed = parseJSONResponse(content);
+        return this.validateResponse(parsed);
+      });
+      responseObj = value;
+      console.log(`🤖 [AIManager] Response validated: model=${model}, intent=${responseObj.intent}`);
     } catch (err) {
-      console.warn(`⚠️ [AIManager] Primary model failed: ${err.message}. Transitioning to fallback model...`);
-    }
-
-    if (!primarySuccess) {
-      try {
-        const apiKey = this.provider.getApiKey();
-        const { fallback } = this.provider.getModels();
-        
-        let data;
-        try {
-          // Query Fallback Model (Attempt 1)
-          data = await this.provider.callOpenRouter(apiKey, fallback, messages);
-        } catch (err) {
-          if (this.isTransientError(err)) {
-            console.warn(`⚠️ [AIManager] Fallback model transient error: ${err.message}. Retrying once...`);
-            // Query Fallback Model (Attempt 2 - Retry)
-            data = await this.provider.callOpenRouter(apiKey, fallback, messages);
-          } else {
-            throw err;
-          }
-        }
-        
-        const result = this.provider.parseProviderResponse(data, fallback);
-        const parsed = parseJSONResponse(result.content);
-        responseObj = this.validateResponse(parsed);
-        
-        console.log(`🤖 [AIManager] Fallback model response parsed & validated: model=${result.model}, intent=${responseObj.intent}`);
-      } catch (fallbackErr) {
-        console.error(`❌ [AIManager] Fallback model failed: ${fallbackErr.message}`);
-        
-        // Final failover to Rule Engine
-        return this.executeFallback(username, message, `AI failure: ${fallbackErr.message}`);
-      }
+      console.error(`❌ [AIManager] All providers failed: ${err.message}`);
+      return this.executeFallback(username, message, `AI failure: ${err.message}`);
     }
 
     // Success path: update memory, cache response, and return
