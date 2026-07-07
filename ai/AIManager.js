@@ -254,10 +254,15 @@ class AIManager {
   // Helper to execute Rule Engine fallback and update memory
   executeFallback(username, message, reason) {
     const fallbackResult = this.parseRuleEngineFallback(username, message);
-    
-    // Prefix fallback response if triggered by failure or rate limiting
+
+    // Log the full error server-side only — never dump API errors into in-game chat
+    // (long messages exceed Minecraft's 256-char limit and disconnect the bot)
     if (reason && reason !== 'AI disabled or unconfigured') {
-      fallbackResult.response = `[API Error Fallback: ${reason}] ` + fallbackResult.response;
+      console.warn(`[AIManager] Fallback triggered: ${reason}`);
+      // Replace the verbose rule-engine message with a short, safe one
+      if (fallbackResult.intent === 'say' || !fallbackResult.intent) {
+        fallbackResult.response = `AI offline, using commands. (type !help)`;
+      }
     }
 
     this.memory.addMessage('assistant', fallbackResult.response);
