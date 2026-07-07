@@ -5,6 +5,7 @@
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js",
+    "watcher": "./venv310/bin/python main.py",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

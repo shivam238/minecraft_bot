@@ -1,4 +1,6 @@
 node_modules/
 .env
 scratch_user_req.txt
-
+venv310/
+__pycache__/
+*.pyc
