@@ -1,0 +1,1 @@
+- [Void safety design](void-safety-design.md) — bot uses VOID_ESCAPE priority (0) + isDirectionSafe/isFallingIntoVoid; key invariant: always rotate to validated yaw then press forward.
