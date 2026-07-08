@@ -142,6 +142,10 @@ class SkillManager extends EventEmitter {
     const fs = require('fs');
     const path = require('path');
 
+    // Always resolve to an absolute path so require() works correctly
+    // regardless of what CWD or relative path the caller passes in.
+    const absDir = path.resolve(process.cwd(), skillsDir);
+
     const traverse = (dir) => {
       if (!fs.existsSync(dir)) return;
       for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -163,8 +167,8 @@ class SkillManager extends EventEmitter {
       }
     };
 
-    traverse(skillsDir);
-    log.ok(`[SkillManager] Loaded ${this.skills.size} skills from ${skillsDir}`);
+    traverse(absDir);
+    log.ok(`[SkillManager] Loaded ${this.skills.size} skills from ${absDir}`);
   }
 }
 

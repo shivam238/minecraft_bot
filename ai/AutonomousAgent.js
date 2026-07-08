@@ -14,19 +14,20 @@ const Reflection = require('./Reflection');
 const DecisionEngine = require('./DecisionEngine');
 
 /**
- * AutonomousAgent is the top-level orchestrator for the autonomous Minecraft AI.
+ * AutonomousAgent — top-level orchestrator.
  *
- * It wires all sub-systems together:
- *   NeedsSystem → DecisionEngine → GoalManager → Planner → TaskQueue → SkillManager
- *                                                         ↑
- *                                              Reflection (failure handling)
+ * Bug fixes in this revision:
+ *  #1  Queue-growth on replan: _onDecision now calls taskQueue.replacePlan()
+ *      instead of clearPending() + enqueue(). replacePlan() atomically aborts
+ *      the running task, wipes all pending, and loads a fresh plan.
+ *  #3  Reflection 'redirect' action: handled in _onTaskFailed — fails the
+ *      current goal and creates a different goal (e.g. explore_forest).
+ *  #5  WorldMemory injection: bot._worldMemory is set so skills can save
+ *      discovered trees/ores without importing WorldMemory themselves.
+ *  #7  Before every new plan: cancel current execution, clear pending,
+ *      fail the old goal. Only ONE active goal at any time.
  *
- * Integration with existing bot:
- *   - Created alongside (not replacing) AIManager
- *   - Activated via `agent.attach(bot)` after bot spawns
- *   - Deactivated via `agent.detach()` on bot end/disconnect
- *   - Respects existing `state.botState` — agent pauses when botState is
- *     'following', 'sleeping', or combat priority is active
+ * Public API is unchanged from the previous version.
  *
  * @fires AutonomousAgent#started
  * @fires AutonomousAgent#stopped
@@ -35,9 +36,9 @@ const DecisionEngine = require('./DecisionEngine');
 class AutonomousAgent extends EventEmitter {
   /**
    * @param {Object} [options]
-   * @param {boolean} [options.enabled=true] - Master switch
-   * @param {boolean} [options.autoStart=true] - Start automatically on attach
-   * @param {string} [options.skillsDir] - Override skills directory path
+   * @param {boolean} [options.enabled=true]
+   * @param {boolean} [options.autoStart=true]
+   * @param {string}  [options.skillsDir]
    */
   constructor(options = {}) {
     super();
@@ -49,7 +50,7 @@ class AutonomousAgent extends EventEmitter {
     this._stateCheckInterval = null;
     this._running = false;
 
-    // Instantiate all subsystems
+    // Sub-systems
     this.worldMemory = new WorldMemory();
     this.needsSystem = new NeedsSystem({ tickIntervalMs: 3000 });
     this.goalManager = new GoalManager();
@@ -64,32 +65,31 @@ class AutonomousAgent extends EventEmitter {
       { evaluateIntervalMs: 5000 }
     );
 
+    // Fix #7: track the single active plan (goal → last task id)
+    this._activePlanLastTaskId = null;
+    this._activeGoalCompletionListener = null;
+
     this._wireEvents();
   }
 
   // ─── Public API ──────────────────────────────────────────────────────────────
 
-  /**
-   * Attach the agent to a live bot instance (call on bot 'spawn').
-   * @param {import('mineflayer').Bot} bot
-   */
+  /** @param {import('mineflayer').Bot} bot */
   attach(bot) {
     if (!this.enabled) {
       log.info('[AutonomousAgent] Disabled — not attaching');
       return;
     }
     this.bot = bot;
+
+    // Fix #5: inject WorldMemory reference so skills can save discoveries
+    bot._worldMemory = this.worldMemory;
+
     log.ok('[AutonomousAgent] Attached to bot');
-
-    // Load all skills from the skills/ directory
     this.skillManager.loadDirectory(this.skillsDir);
-
     if (this.autoStart) this.start();
   }
 
-  /**
-   * Start the autonomous loop.
-   */
   async start() {
     if (this._running || !this.bot) return;
     this._running = true;
@@ -98,17 +98,12 @@ class AutonomousAgent extends EventEmitter {
     this.decisionEngine.start(this.bot);
     await this.taskQueue.start(this.bot);
 
-    // State-guard: pause agent when bot is in follow/combat/sleep modes
     this._stateCheckInterval = setInterval(() => this._checkBotState(), 1000);
 
     log.ok('[AutonomousAgent] Started');
-    /** @event AutonomousAgent#started */
     this.emit('started');
   }
 
-  /**
-   * Stop the autonomous loop (does not destroy subsystems).
-   */
   async stop() {
     if (!this._running) return;
     this._running = false;
@@ -124,21 +119,19 @@ class AutonomousAgent extends EventEmitter {
 
     this.goalManager.pauseActive();
     log.info('[AutonomousAgent] Stopped');
-    /** @event AutonomousAgent#stopped */
     this.emit('stopped');
   }
 
-  /**
-   * Detach from the current bot (call on bot 'end').
-   */
   async detach() {
     await this.stop();
-    this.bot = null;
+    if (this.bot) {
+      delete this.bot._worldMemory;
+      this.bot = null;
+    }
     log.info('[AutonomousAgent] Detached from bot');
   }
 
   /**
-   * Manually add a goal (e.g. from a chat command).
    * @param {string} type
    * @param {string} description
    * @param {Object} [parameters={}]
@@ -149,10 +142,7 @@ class AutonomousAgent extends EventEmitter {
     return this.goalManager.addGoal(type, description, parameters, priority);
   }
 
-  /**
-   * Status report for !aistatus command.
-   * @returns {Object}
-   */
+  /** @returns {Object} */
   getStatus() {
     return {
       enabled: this.enabled,
@@ -169,29 +159,16 @@ class AutonomousAgent extends EventEmitter {
   // ─── Event Wiring ────────────────────────────────────────────────────────────
 
   _wireEvents() {
-    // Decision → create or activate goal → plan → enqueue tasks
-    this.decisionEngine.on('decision', (decision) => this._onDecision(decision));
+    this.decisionEngine.on('decision', (d) => this._onDecision(d));
     this.decisionEngine.on('idle', () => log.info('[AutonomousAgent] Idle — no goals'));
 
-    // Task failures → Reflection
     this.taskQueue.on('taskFailed', (task, err) => this._onTaskFailed(task, err));
+    this.taskQueue.on('taskCompleted', (task) => this._onTaskCompleted(task));
 
-    // Task completion → record success
-    this.taskQueue.on('taskCompleted', (task) => {
-      if (task.goalId) {
-        const goal = this.goalManager.goals.get(task.goalId);
-        if (goal && goal.type) {
-          this.reflection.recordSuccess(goal.type, task.skillId);
-        }
-      }
-    });
-
-    // Goal completed
     this.goalManager.on('goalCompleted', (goal) => {
       log.ok(`[AutonomousAgent] Goal completed: ${goal.description}`);
     });
 
-    // Critical needs → immediate evaluation
     this.needsSystem.on('criticalNeed', (need) => {
       log.warn(`[AutonomousAgent] Critical need: ${need.label} — ${need.reason}`);
       this.decisionEngine.evaluateNow();
@@ -201,10 +178,13 @@ class AutonomousAgent extends EventEmitter {
   // ─── Internal Handlers ───────────────────────────────────────────────────────
 
   /**
-   * @param {Object} decision - From DecisionEngine
+   * @param {Object} decision
    */
   _onDecision(decision) {
-    // If decision references an existing goal, activate it
+    // ── Fix #7: Nuke old plan before creating a new one ──────────────────────
+    this._cancelActivePlan();
+
+    // Resolve or create goal
     let goal;
     if (decision.existingGoalId) {
       try {
@@ -214,7 +194,6 @@ class AutonomousAgent extends EventEmitter {
         return;
       }
     } else {
-      // Create a new goal
       goal = this.goalManager.addGoal(
         decision.goalType,
         decision.reason,
@@ -224,37 +203,52 @@ class AutonomousAgent extends EventEmitter {
       goal = this.goalManager.activateGoal(goal.id);
     }
 
-    /** @event AutonomousAgent#goalActivated */
     this.emit('goalActivated', goal);
 
-    // Plan the goal
     if (!this.bot) return;
-    const plan = this.planner.plan(goal, this.bot);
 
+    const plan = this.planner.plan(goal, this.bot);
     if (!plan) {
       this.goalManager.failGoal(goal.id, 'Planner could not create a plan');
       return;
     }
 
-    // Enqueue all tasks
-    this.taskQueue.clearPending();
-    let lastTaskId = null;
-    for (const step of plan.steps) {
-      const task = this.taskQueue.enqueue(step.skillId, step.parameters, {
-        timeout: step.timeout,
-        goalId: goal.id,
-      });
-      lastTaskId = task.id;
+    // ── Fix #1: replacePlan — atomic cancel + load ───────────────────────────
+    const tasks = this.taskQueue.replacePlan(plan.steps, goal.id);
+    if (tasks.length === 0) {
+      this.goalManager.failGoal(goal.id, 'Plan produced no executable tasks');
+      return;
     }
 
-    // When queue drains, mark goal complete (we check the last task)
-    const onComplete = (task) => {
-      if (task.id === lastTaskId) {
-        this.taskQueue.removeListener('taskCompleted', onComplete);
-        this.goalManager.completeGoal(goal.id);
+    this._activePlanLastTaskId = tasks[tasks.length - 1].id;
+
+    // ── Fix #7: install completion listener; remove stale ones ───────────────
+    if (this._activeGoalCompletionListener) {
+      this.taskQueue.removeListener('taskCompleted', this._activeGoalCompletionListener);
+    }
+    const goalId = goal.id;
+    const lastId = this._activePlanLastTaskId;
+    this._activeGoalCompletionListener = (task) => {
+      if (task.id === lastId) {
+        this.taskQueue.removeListener('taskCompleted', this._activeGoalCompletionListener);
+        this._activeGoalCompletionListener = null;
+        try { this.goalManager.completeGoal(goalId); } catch (_) {}
       }
     };
-    this.taskQueue.on('taskCompleted', onComplete);
+    this.taskQueue.on('taskCompleted', this._activeGoalCompletionListener);
+
+    log.info(`[AutonomousAgent] Plan started — goal [${goal.type}], ${tasks.length} tasks`);
+  }
+
+  /**
+   * @param {import('./TaskQueue').Task} task
+   */
+  _onTaskCompleted(task) {
+    if (!task.goalId) return;
+    const goal = this.goalManager.goals.get(task.goalId);
+    if (goal && goal.type) {
+      this.reflection.recordSuccess(goal.type, task.skillId);
+    }
   }
 
   /**
@@ -269,6 +263,7 @@ class AutonomousAgent extends EventEmitter {
     const result = this.reflection.reflect(goal, task, err, context);
 
     switch (result.action) {
+
       case 'retry':
         log.info(`[AutonomousAgent] Retrying task: ${task.skillId}`);
         this.taskQueue.prepend(task.skillId, task.parameters, {
@@ -276,20 +271,41 @@ class AutonomousAgent extends EventEmitter {
           goalId: task.goalId,
         });
         break;
+
       case 'replan':
         log.info(`[AutonomousAgent] Replanning goal: ${goal.type}`);
+        // Fix #7: full cancel before re-enqueue
+        this._cancelActivePlan();
         this.goalManager.failGoal(goal.id, result.reason);
-        // Re-add goal so DecisionEngine picks it up again
+        // Re-add the same goal — DecisionEngine will pick it up
         this.goalManager.addGoal(goal.type, goal.description, goal.parameters, goal.priority);
+        // Trigger immediate re-evaluation instead of waiting 5s
+        this.decisionEngine.evaluateNow();
         break;
+
       case 'skip':
         log.warn(`[AutonomousAgent] Skipping goal: ${goal.description}`);
+        this._cancelActivePlan();
         this.goalManager.failGoal(goal.id, result.reason);
         break;
-      case 'escalate':
-        log.warn(`[AutonomousAgent] Escalating goal failure: ${goal.description}`);
+
+      // Fix #3: Reflection emits 'redirect' when retries exhausted
+      case 'redirect': {
+        const rg = result.redirectGoal;
+        log.warn(`[AutonomousAgent] Redirecting — ${result.reason}`);
+        log.info(`[AutonomousAgent] Creating redirect goal: ${rg.type}`);
+        this._cancelActivePlan();
         this.goalManager.failGoal(goal.id, result.reason);
-        // Add a survive goal with highest priority
+        // Add the redirect goal with slightly higher priority so it runs next
+        this.goalManager.addGoal(rg.type, rg.description, rg.parameters, rg.priority || 45);
+        this.decisionEngine.evaluateNow();
+        break;
+      }
+
+      case 'escalate':
+        log.warn(`[AutonomousAgent] Escalating: ${goal.description}`);
+        this._cancelActivePlan();
+        this.goalManager.failGoal(goal.id, result.reason);
         this.goalManager.addGoal('survive', 'Emergency survival', {}, 1);
         this.decisionEngine.evaluateNow();
         break;
@@ -297,8 +313,25 @@ class AutonomousAgent extends EventEmitter {
   }
 
   /**
-   * Guard: pause agent when bot is controlled by the existing priority system.
+   * Fix #7: Cancel current execution + clear pending in one call.
+   * Safe to call even when nothing is running.
    */
+  _cancelActivePlan() {
+    // Remove stale completion listener
+    if (this._activeGoalCompletionListener) {
+      this.taskQueue.removeListener('taskCompleted', this._activeGoalCompletionListener);
+      this._activeGoalCompletionListener = null;
+    }
+    this._activePlanLastTaskId = null;
+
+    // Abort running + clear pending — uses TaskQueue's internal abort
+    this.taskQueue.clearPending();
+    if (this.taskQueue._abortController) {
+      this.taskQueue._abortController.abort();
+    }
+  }
+
+  /** Guard: suspend agent when existing priority system is active. */
   _checkBotState() {
     try {
       const { state } = require('../lib/state');
@@ -313,7 +346,7 @@ class AutonomousAgent extends EventEmitter {
       );
 
       if (isBlocked && this.taskQueue._running) {
-        log.info('[AutonomousAgent] Bot priority system active — suspending task execution');
+        log.info('[AutonomousAgent] Bot priority system active — suspending');
         this.taskQueue.stop();
         this.goalManager.pauseActive();
       } else if (!isBlocked && !this.taskQueue._running && this._running) {
