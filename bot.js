@@ -34,6 +34,12 @@ function printStatus() {
 }
 
 function setupConsole(lifecycleApi) {
+  // On Railway/headless environments stdin is not a TTY — skip interactive console
+  if (!process.stdin.isTTY) {
+    log.info('No TTY detected (Railway/headless) — console input disabled.');
+    return null;
+  }
+
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   printLifecycleHelp();
 
@@ -61,21 +67,40 @@ function setupConsole(lifecycleApi) {
     }
   });
 
+  // Prevent stdin close from killing the process on headless envs
+  rl.on('close', () => {
+    log.info('Console readline closed — bot continues running.');
+  });
+
   return rl;
 }
 
 function setupSignalHandlers(lifecycleApi, rl) {
   const shutdown = (signal) => {
-    log.info(`${signal} received — stopping bot`);
+    log.info(`${signal} received — stopping bot gracefully`);
     lifecycleApi.stop(signal);
-    rl.close();
-    process.exit(0);
+    if (rl) rl.close();
+    // Give bot 2s to cleanly disconnect before exiting
+    setTimeout(() => process.exit(0), 2000);
   };
   process.on('SIGINT', () => shutdown('SIGINT'));
   process.on('SIGTERM', () => shutdown('SIGTERM'));
 }
 
+function setupGlobalErrorGuards() {
+  // Prevent any uncaught error from crashing the Railway process
+  process.on('uncaughtException', (err) => {
+    log.fail('Uncaught exception (bot continues)', err);
+  });
+  process.on('unhandledRejection', (reason) => {
+    log.warn(`Unhandled promise rejection: ${reason instanceof Error ? reason.message : reason}`);
+  });
+}
+
 function main() {
+  // Catch-all guards — must be first
+  setupGlobalErrorGuards();
+
   loadConfig((config) => {
     if (aiManager) aiManager.updateConfig(config);
   });
@@ -92,3 +117,4 @@ function main() {
 }
 
 main();
+
