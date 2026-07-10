@@ -1,6 +1,65 @@
 require('dotenv').config();
 
+const { spawnSync, spawn } = require('child_process');
 const readline = require('readline');
+
+// ---------------------------------------------------------------------------
+// keep_alive — starts keep_alive.py (Flask on :8080) so UptimeRobot can ping
+// ---------------------------------------------------------------------------
+let keepAliveChild = null;
+const KEEP_ALIVE_MAX_RESTARTS = 3;
+let keepAliveRestarts = 0;
+
+function spawnKeepAlive() {
+  const child = spawn('python3', ['keep_alive.py'], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    detached: false,
+  });
+
+  child.stdout.on('data', (d) => process.stdout.write(d));
+  child.stderr.on('data', (d) => {
+    const msg = d.toString();
+    // suppress Flask's routine dev-server noise
+    if (!msg.includes('WARNING') && !msg.includes('Press CTRL+C')) {
+      process.stderr.write(msg);
+    }
+  });
+
+  // Non-fatal: if python3 can't be spawned, log and continue without keep-alive
+  child.on('error', (err) => {
+    console.warn(`[keep_alive] Failed to spawn python3: ${err.message} — bot continues without keep-alive.`);
+    keepAliveChild = null;
+  });
+
+  child.on('exit', (code, signal) => {
+    keepAliveChild = null;
+    if (signal === 'SIGTERM' || signal === 'SIGKILL') return; // intentional shutdown
+    console.warn(`[keep_alive] process exited (code=${code}) — keep-alive is offline.`);
+    // One-shot bounded restart to survive transient failures
+    if (keepAliveRestarts < KEEP_ALIVE_MAX_RESTARTS) {
+      keepAliveRestarts++;
+      const delay = keepAliveRestarts * 5000;
+      console.warn(`[keep_alive] Restarting in ${delay / 1000}s (attempt ${keepAliveRestarts}/${KEEP_ALIVE_MAX_RESTARTS})...`);
+      setTimeout(() => { keepAliveChild = spawnKeepAlive(); }, delay);
+    } else {
+      console.warn('[keep_alive] Max restarts reached — running without keep-alive until next bot restart.');
+    }
+  });
+
+  return child;
+}
+
+function startKeepAlive() {
+  keepAliveChild = spawnKeepAlive();
+  return keepAliveChild;
+}
+
+function stopKeepAlive() {
+  if (keepAliveChild) {
+    keepAliveChild.kill('SIGTERM');
+    keepAliveChild = null;
+  }
+}
 const AIManager = require('./ai/AIManager');
 const { loadConfig, getConfig } = require('./lib/config');
 const { buildLifecycleApi } = require('./lib/botFactory');
@@ -79,6 +138,7 @@ function setupSignalHandlers(lifecycleApi, rl) {
   const shutdown = (signal) => {
     log.info(`${signal} received — stopping bot gracefully`);
     lifecycleApi.stop(signal);
+    stopKeepAlive();
     if (rl) rl.close();
     // Give bot 2s to cleanly disconnect before exiting
     setTimeout(() => process.exit(0), 2000);
@@ -100,6 +160,9 @@ function setupGlobalErrorGuards() {
 function main() {
   // Catch-all guards — must be first
   setupGlobalErrorGuards();
+
+  // Start Flask keep-alive server so UptimeRobot can prevent free-tier sleep
+  startKeepAlive();
 
   loadConfig((config) => {
     if (aiManager) aiManager.updateConfig(config);
